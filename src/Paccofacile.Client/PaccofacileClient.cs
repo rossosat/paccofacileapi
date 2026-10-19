@@ -91,7 +91,9 @@ public sealed class PaccofacileClient : IDisposable
     public async Task<List<LocalityItem>> SearchLocalitiesAsync(string isoCode, string search, CancellationToken ct = default)
     {
         var res = await SendAsync<LocalityItems>(HttpMethod.Post, "locality/validation", new { iso_code = isoCode, search }, ct, throwOnError: false);
-        return res.Data?.Items ?? new List<LocalityItem>();
+        if (res.StatusCode >= 500 || res.StatusCode == 401 || res.StatusCode == 403)
+            throw new PaccofacileException((System.Net.HttpStatusCode)res.StatusCode, "locality/validation", res.Raw.ValueKind == JsonValueKind.Undefined ? "" : res.Raw.GetRawText(), res.Raw.ValueKind == JsonValueKind.Undefined ? null : res.Raw);
+        return res.Data?.Items ?? new List<LocalityItem>();   // 4xx "not found" style answers = no match
     }
 
     public Task<ApiResponse<JsonElement>> SearchLocalityAsync(object payload, CancellationToken ct = default)
