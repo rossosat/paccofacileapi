@@ -47,6 +47,7 @@ function New-PfShipment {
         [string]$Note,
         [string]$Collo,
         [string]$Ordine,
+        [string]$Mittente,
         [int]$Servizio,
         [switch]$Paga,
         [switch]$SoloPreventivo,
@@ -59,6 +60,7 @@ function New-PfShipment {
     if ($Note)     { $a += @('--note', $Note) }
     if ($Collo)    { $a += @('--parcel', $Collo) }
     if ($Ordine)   { $a += @('--order', $Ordine) }
+    if ($Mittente) { $a += @('--sender', $Mittente) }
     if ($Servizio) { $a += @('--service', $Servizio) }
     if ($Paga)     { $a += '--buy' }
     if ($SoloPreventivo) { $a += '--dry-run' }
@@ -74,6 +76,7 @@ function Import-PfAmazonOrders {
         [switch]$Paga,
         [string]$Solo,
         [int]$Servizio,
+        [string]$Mittente,
         [string]$Collo,
         [string]$Out
     )
@@ -83,6 +86,7 @@ function Import-PfAmazonOrders {
     if ($Solo) { $a += @('--only', $Solo) }
     if ($Servizio) { $a += @('--service', $Servizio) }
     if ($Collo) { $a += @('--parcel', $Collo) }
+    if ($Mittente) { $a += @('--sender', $Mittente) }
     if ($Out) { $a += @('--out', $Out) }
     Invoke-Pf @a
 }

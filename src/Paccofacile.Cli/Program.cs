@@ -20,6 +20,15 @@ var verbose = flags.ContainsKey("verbose") || flags.ContainsKey("v");
 
 var cfg = AppConfig.Load(AppContext.BaseDirectory);
 if (flags.TryGetValue("mode", out var mode)) cfg.Paccofacile.Mode = mode;
+try
+{
+    cfg.SelectSender(flags.TryGetValue("sender", out var snd) ? snd : flags.TryGetValue("mittente", out var mit) ? mit : null);
+}
+catch (ArgumentException ex)
+{
+    Console.Error.WriteLine($"Errore: {ex.Message}");
+    return 2;
+}
 
 PaccofacileClient api;
 try
@@ -41,7 +50,8 @@ if (verbose)
         Console.WriteLine(resBody.Length > 4000 ? resBody[..4000] + "…" : resBody);
     };
 
-Console.WriteLine($"Paccofacile [{cfg.Paccofacile.Mode}] account {cfg.Paccofacile.AccountNumber}");
+Console.WriteLine($"Paccofacile [{cfg.Paccofacile.Mode}] account {cfg.Paccofacile.AccountNumber}"
+    + (cfg.Senders.Count > 0 ? $"  mittente: {cfg.ActiveSenderName} ({cfg.ActiveSender.HeaderName})" : ""));
 
 try
 {
@@ -112,7 +122,13 @@ async Task<int> Check()
         Console.WriteLine("ATTENZIONE: indirizzo mittente incompleto in appsettings.json, mancano:");
         foreach (var p in problems) Console.WriteLine("  - " + p);
     }
-    else Console.WriteLine($"mittente: {cfg.SenderAddress}");
+    else Console.WriteLine($"mittente attivo: {cfg.SenderAddress}");
+    if (cfg.Senders.Count > 0)
+    {
+        Console.WriteLine("mittenti disponibili (--sender NOME):");
+        foreach (var sp in cfg.Senders)
+            Console.WriteLine($"  {sp.Key,-12} {sp.Value.HeaderName} - {sp.Value.Email}{(string.Equals(sp.Key, cfg.DefaultSender, StringComparison.OrdinalIgnoreCase) ? "  [default]" : "")}");
+    }
     return 0;
 }
 
@@ -476,7 +492,7 @@ Paccofacile CLI - crea e paga spedizioni Paccofacile.it PRO da riga di comando.
   tracking [--order 403-...|<id paccofacile>] [--full]                tracking ricevuti dal webhook (cartella Webhook.DataDir)
   confirm  --file amazon-conferma-spedizione-....txt [--out ...]      completa la colonna tracking-number con i dati del webhook
 
-Opzioni globali: --verbose (log HTTP completo)   --mode live|sandbox
+Opzioni globali: --verbose (log HTTP completo)   --mode live|sandbox   --sender NOME (profilo mittente, vedi `check`; default da appsettings)
 Colli: --parcel LxWxH:kg[,...]  (es. 30x20x15:1.2,20x15x10:0.5); senza --parcel usa SkuParcels/DefaultParcel di appsettings.json
 Senza --buy le spedizioni restano "da pagare" nell'area riservata; --buy le paga subito con il credito (payment_method CREDIT).
 """);

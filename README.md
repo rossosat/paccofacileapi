@@ -12,7 +12,8 @@ samples/                 file ordini di esempio (Amazon e CSV generico)
 ## Setup
 
 1. `src/Paccofacile.Cli/appsettings.Local.json` (ignorato da git) contiene Token, Api Key, Account Number
-   e l'indirizzo mittente. Le chiavi si generano su paccofacile.it > Integrazioni > API Paccofacile.it > API KEY LIVE.
+   e i profili mittente (`Senders`, uno o più, con `DefaultSender`; `--sender NOME` sceglie il profilo a riga di comando).
+   Le chiavi si generano su paccofacile.it > Integrazioni > API Paccofacile.it > API KEY LIVE.
    In alternativa: variabili d'ambiente `PACCOFACILE_TOKEN`, `PACCOFACILE_API_KEY`, `PACCOFACILE_ACCOUNT_NUMBER`.
 2. In `appsettings.json` imposta `DefaultParcel` (collo usato quando non si sa altro) e, per ogni SKU che vendi,
    le misure in `SkuParcels` (un collo per unità). Così dal report Amazon, che non ha misure, escono preventivi giusti.

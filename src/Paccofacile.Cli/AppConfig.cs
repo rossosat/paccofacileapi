@@ -55,8 +55,38 @@ public sealed class AppConfig
 
     public PaccofacileOptions Paccofacile { get; set; } = new();
 
-    /// <summary>Your warehouse / pickup address. Required for quotes and shipments.</summary>
+    /// <summary>Single sender (legacy). When <see cref="Senders"/> is filled this is ignored.</summary>
     public SenderConfig Sender { get; set; } = new();
+
+    /// <summary>Named sender profiles, e.g. "bsplanet", "itsnc". Chosen with --sender NAME, default = <see cref="DefaultSender"/>.</summary>
+    public Dictionary<string, SenderConfig> Senders { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>Key of <see cref="Senders"/> used when --sender is not given.</summary>
+    public string DefaultSender { get; set; } = "";
+
+    [JsonIgnore] public string ActiveSenderName { get; private set; } = "";
+
+    /// <summary>Picks the sender profile for this run. Accepts the key or a prefix/substring of the key or of the header name.</summary>
+    public void SelectSender(string? requested)
+    {
+        if (Senders.Count == 0)
+        {
+            if (!string.IsNullOrWhiteSpace(requested)) throw new ArgumentException("nessun profilo mittente in Senders: impossibile usare --sender");
+            ActiveSenderName = "";
+            return;
+        }
+        var name = string.IsNullOrWhiteSpace(requested) ? DefaultSender : requested.Trim();
+        if (string.IsNullOrWhiteSpace(name)) name = Senders.Keys.First();
+        if (Senders.ContainsKey(name)) { ActiveSenderName = Senders.Keys.First(k => string.Equals(k, name, StringComparison.OrdinalIgnoreCase)); return; }
+
+        var match = Senders.Keys.Where(k => k.Contains(name, StringComparison.OrdinalIgnoreCase)
+                                         || Senders[k].HeaderName.Contains(name, StringComparison.OrdinalIgnoreCase)
+                                         || Senders[k].Email.Contains(name, StringComparison.OrdinalIgnoreCase)).ToList();
+        if (match.Count == 1) { ActiveSenderName = match[0]; return; }
+        throw new ArgumentException($"mittente '{name}' {(match.Count == 0 ? "non trovato" : "ambiguo")}; disponibili: {string.Join(", ", Senders.Select(kv => $"{kv.Key} ({kv.Value.HeaderName})"))}");
+    }
+
+    public SenderConfig ActiveSender => Senders.Count > 0 ? Senders[string.IsNullOrWhiteSpace(ActiveSenderName) ? (Senders.ContainsKey(DefaultSender) ? DefaultSender : Senders.Keys.First()) : ActiveSenderName] : Sender;
 
     /// <summary>Parcel used when the order gives no dimensions and the SKU is not in SkuParcels.</summary>
     public ParcelConfig DefaultParcel { get; set; } = new() { Dim1 = 30, Dim2 = 20, Dim3 = 15, Weight = 1 };
@@ -104,7 +134,7 @@ public sealed class AppConfig
     public string ResolvedWebhookDataDir => Path.IsPathRooted(Webhook.DataDir) ? Webhook.DataDir : Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, Webhook.DataDir));
 
     // ---- derived API objects ----
-    [JsonIgnore] public ShipmentAddress SenderAddress => Sender.ToAddress();
+    [JsonIgnore] public ShipmentAddress SenderAddress => ActiveSender.ToAddress();
     [JsonIgnore] public Parcel DefaultParcelObj => DefaultParcel.ToParcel();
     public bool TryGetSkuParcel(string sku, out Parcel parcel)
     {
@@ -154,6 +184,8 @@ public sealed class AppConfig
             if (!string.IsNullOrWhiteSpace(layer.Paccofacile.AccountNumber)) Paccofacile.AccountNumber = layer.Paccofacile.AccountNumber;
         }
         if (Has("Sender")) Sender = layer.Sender;
+        if (Has("Senders")) Senders = new Dictionary<string, SenderConfig>(layer.Senders, StringComparer.OrdinalIgnoreCase);   // a layer replaces the whole list
+        if (Has("DefaultSender")) DefaultSender = layer.DefaultSender;
         if (Has("DefaultParcel")) DefaultParcel = layer.DefaultParcel;
         if (Has("SkuParcels"))
             foreach (var kv in layer.SkuParcels) SkuParcels[kv.Key] = kv.Value;
@@ -173,15 +205,16 @@ public sealed class AppConfig
 
     public List<string> SenderProblems()
     {
+        var s = ActiveSender;
         var p = new List<string>();
-        if (string.IsNullOrWhiteSpace(Sender.HeaderName)) p.Add("Sender.HeaderName (ragione sociale / nome mittente)");
-        if (string.IsNullOrWhiteSpace(Sender.Address)) p.Add("Sender.Address (via)");
-        if (string.IsNullOrWhiteSpace(Sender.BuildingNumber)) p.Add("Sender.BuildingNumber (numero civico)");
-        if (string.IsNullOrWhiteSpace(Sender.PostalCode)) p.Add("Sender.PostalCode (CAP)");
-        if (string.IsNullOrWhiteSpace(Sender.City)) p.Add("Sender.City");
-        if (string.IsNullOrWhiteSpace(Sender.StateOrProvinceCode)) p.Add("Sender.StateOrProvinceCode (sigla provincia)");
-        if (string.IsNullOrWhiteSpace(Sender.Phone)) p.Add("Sender.Phone");
-        if (string.IsNullOrWhiteSpace(Sender.Email)) p.Add("Sender.Email");
+        if (string.IsNullOrWhiteSpace(s.HeaderName)) p.Add("HeaderName (ragione sociale / nome mittente)");
+        if (string.IsNullOrWhiteSpace(s.Address)) p.Add("Address (via)");
+        if (string.IsNullOrWhiteSpace(s.BuildingNumber)) p.Add("BuildingNumber (numero civico)");
+        if (string.IsNullOrWhiteSpace(s.PostalCode)) p.Add("PostalCode (CAP)");
+        if (string.IsNullOrWhiteSpace(s.City)) p.Add("City");
+        if (string.IsNullOrWhiteSpace(s.StateOrProvinceCode)) p.Add("StateOrProvinceCode (sigla provincia)");
+        if (string.IsNullOrWhiteSpace(s.Phone)) p.Add("Phone");
+        if (string.IsNullOrWhiteSpace(s.Email)) p.Add("Email");
         return p;
     }
 }

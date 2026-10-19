@@ -9,7 +9,7 @@ L'utente spesso chiede: "crea la spedizione per questo indirizzo" (anche da scre
 3. Esegui (da qualsiasi cartella, `dist` è nel PATH utente; in alternativa `dotnet run --project src/Paccofacile.Cli --`):
 
    ```powershell
-   paccofacile ship --name "..." --address "Via ... 12" --zip 00100 --city Roma --prov RM --phone 333... --email ... --parcel 30x20x15:1 --order <riferimento>
+   paccofacile ship --name "..." --address "Via ... 12" --zip 00100 --city Roma --prov RM --phone 333... --email ... --parcel 30x20x15:1 --order <riferimento> [--sender itsnc]
    ```
 
    Prima di creare, se c'è un dubbio sull'indirizzo, fai `--dry-run` (solo preventivo). Il tool normalizza CAP/città contro il
@@ -19,7 +19,10 @@ L'utente spesso chiede: "crea la spedizione per questo indirizzo" (anche da scre
 5. Riporta all'utente: shipment_id, corriere/servizio, prezzo, data ritiro, e il collo usato.
 
 Regole di scelta corriere (già in `src/Paccofacile.Cli/appsettings.Local.json`, non cambiarle senza chiedere):
-- Mittente: Assistenza Bs Planet, Via Vittorio Veneto 78, 52010 Capolona (AR), tel 0575420339.
+- Mittenti predefiniti (stesso indirizzo: Via Vittorio Veneto 78, 52010 Capolona AR, tel 0575420339), scelta con `--sender`:
+  - `bsplanet` = Assistenza Bs Planet, info@assistenzabsplanet.it  **(default, usalo se l'utente non dice nulla)**
+  - `itsnc` = Information Technology S.n.c., info@arezzopc.it  (usalo se l'utente dice "Information Technology", "IT snc", "arezzopc")
+  Non chiedere quale mittente usare: default bsplanet, e scrivi nel riepilogo quale hai usato.
 - Priorità SDA nazionale a domicilio (`PreferredServiceIds: [2]`); se non disponibile il più economico a domicilio.
 - Niente punti di ritiro/locker (`HomeDeliveryOnly: true`). `--service ID` forza un servizio specifico (vedi `paccofacile carriers`).
 
