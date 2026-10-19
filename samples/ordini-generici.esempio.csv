@@ -1,0 +1,3 @@
+order_id;name;address;postal_code;city;province;country;phone;email;sku;description;quantity;value;dim1;dim2;dim3;weight
+EBAY-001;Giulia Verdi;Via Dante 7;10121;Torino;TO;IT;3331112222;giulia@example.com;CPU-R5;CPU Ryzen 5;1;180;20;15;10;0.6
+GEST-77;Paolo Neri;Piazza Garibaldi 3;40121;Bologna;Bologna;IT;3334445555;;MON-27;Monitor 27;1;220;70;50;20;7.5

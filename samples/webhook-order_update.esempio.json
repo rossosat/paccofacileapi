@@ -1,0 +1,30 @@
+{
+  "shipment": {
+    "order_id": 9900001,
+    "shipment_id": 7700001,
+    "external_order_id": "403-1234567-1234567",
+    "external_service_name": "amazon",
+    "carrier_code": "GLS",
+    "servizio": {
+      "servizio_id": 108,
+      "codice_servizio_corriere": "EXPRESS",
+      "consolidamento": { "is_service_consolidation": 0, "is_consolidato": 0 }
+    },
+    "recipient": {
+      "contact": { "person_name": "Mario Rossi", "telephone": "+393331234567", "email": "abc@marketplace.amazon.it" },
+      "address": { "address": "Via Giuseppe Verdi", "province_code": "MI", "city": "MILANO", "postal_code": "20121", "country_code": "IT" }
+    },
+    "order": { "order_status_id": 5 },
+    "price_detail": { "amount_total": "6.79", "label_iva": "IVA inclusa", "percentage_tax": 22 },
+    "tracking": {
+      "tracking_number": "GLS123456789IT",
+      "tracking_url": "https://gls-group.eu/IT/it/servizi-online/ricerca-spedizioni?match=GLS123456789IT",
+      "elenco": {
+        "checkpoints": [
+          { "checkpoint_time": "2026-10-20 09:12:00", "message": "Spedizione presa in carico", "city": "ROMA" },
+          { "checkpoint_time": "2026-10-20 21:40:00", "message": "In transito", "city": "BOLOGNA" }
+        ]
+      }
+    }
+  }
+}

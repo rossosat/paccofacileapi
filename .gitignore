@@ -1,0 +1,22 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.swp
+
+## Secrets: never commit the API credentials
+**/appsettings.Local.json
+**/secrets.json
+
+## Runtime output
+shipments-log.csv
+*conferma-spedizione*.txt
+
+## Published output (contains appsettings.Local.json)
+dist/
+
+## Webhook data (tracking pushes, waybill PDFs)
+src/Paccofacile.Webhook/data/
+dist-webhook/

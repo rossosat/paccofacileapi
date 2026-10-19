@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Paccofacile.Cli/Paccofacile.Cli.csproj" />
+    <Project Path="src/Paccofacile.Client/Paccofacile.Client.csproj" />
+    <Project Path="src/Paccofacile.Webhook/Paccofacile.Webhook.csproj" />
+  </Folder>
+</Solution>
