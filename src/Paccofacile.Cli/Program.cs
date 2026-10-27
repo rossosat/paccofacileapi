@@ -217,6 +217,8 @@ async Task<int> Ship()
     var opt = new WorkflowOptions { ServiceId = IntFlag("service"), Buy = flags.ContainsKey("buy"), DryRun = flags.ContainsKey("dry-run"), ParcelOverride = ParseParcels(), Verbose = verbose };
     Console.WriteLine($"spedizione a {order.Destination}");
     var r = await wf.ProcessAsync(order, opt);
+    foreach (var w in order.Warnings.Distinct()) Console.WriteLine("  ! " + w);
+    if (r.Success) Console.WriteLine($"  destinazione finale: {order.Destination}");
     return r.Success ? 0 : 5;
 }
 

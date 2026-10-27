@@ -33,9 +33,11 @@ public sealed class LocalityResolver
 
             if (match is null)
             {
+                // never guess among several towns sharing a CAP (e.g. 07030 = Badesi, Bulzi, Cargeghe…): a typo would ship to the wrong place
+                if (byCap.Count > 1)
+                    return (false, $"città '{a.City}' non trovata tra le località del CAP {cap}: {string.Join(", ", byCap.Select(i => i.Locality))}. Correggi --city");
                 match = byCap[0];
-                warnings.Add($"città '{a.City}' non corrisponde al CAP {cap}: uso '{match.Locality}' ({match.StateOrProvinceCode})"
-                    + (byCap.Count > 1 ? $" [altre località per questo CAP: {string.Join(", ", byCap.Skip(1).Take(5).Select(i => i.Locality))}]" : ""));
+                warnings.Add($"città '{a.City}' non corrisponde al CAP {cap}: uso '{match.Locality}' ({match.StateOrProvinceCode}), unica località per questo CAP");
             }
             else if (!string.Equals(match.Locality, a.City, StringComparison.OrdinalIgnoreCase))
             {
